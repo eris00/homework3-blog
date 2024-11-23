@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Union
+from typing import Annotated, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 from schemas.sections import Section
@@ -35,4 +35,8 @@ class Post(PostBase):
 
 class FilterPosts(BaseModel):
     title: Union[str, None] = None
-    # TODO:  add more filters
+    section_id: Optional[int] = None
+    tags: Optional[List[str]] = None
+    created_at_gt: Optional[datetime] = None
+    created_at_lt: Optional[datetime] = None
+

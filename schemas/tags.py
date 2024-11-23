@@ -1,8 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+from typing import Annotated
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class TagBase(BaseModel):
-    name: str  # TODO: min and max length must be defined!!
+    name: Annotated[str, Field(..., max_length=25, min_length=2)] # tag can be abbreviation, like AI, CS, ML, ...
 
 
 class TagCreate(TagBase):
@@ -13,3 +14,6 @@ class Tag(TagBase):
     id: int
 
     model_config = ConfigDict(from_attributes=True)
+
+class TagWithPostCount(Tag):
+    posts_count: int

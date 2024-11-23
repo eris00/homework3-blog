@@ -29,7 +29,7 @@ def create_section(section: SectionCreate, db: db):
 
 
 @router.put("/{section_id}", response_model=Section)
-def update_section(section_id: int, section: SectionUpdate, db: db):
+def update_section(section_id: int, section: SectionCreate, db: db):
     try:
         section = sections.update_section(db, section_id, section)
         db.commit()
@@ -37,6 +37,15 @@ def update_section(section_id: int, section: SectionUpdate, db: db):
     except DbnotFoundException:
         raise HTTPException(status_code=404, detail=f"Section {section_id} not found!!")
 
+
+@router.patch("/{section_id}", response_model=Section)
+def patch_section(section_id: int, section: SectionUpdate, db: db):
+    try:
+        section = sections.patch_section(db, section_id, section)
+        db.commit()
+        return section
+    except DbnotFoundException:
+        raise HTTPException(status_code=404, detail=f"Section {section_id} not found!")
 
 @router.delete("/{section_id}", status_code=204)
 def delete_section(section_id: int, db: db):

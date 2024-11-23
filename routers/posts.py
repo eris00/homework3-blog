@@ -5,8 +5,7 @@ from exceptions import DbnotFoundException
 from schemas.posts import FilterPosts, Post, PostCreate, PostUpdate
 from database import db
 
-router = APIRouter(prefix="/posts", tags=["posts"])
-
+router = APIRouter(prefix="/posts", tags=["posts"]) 
 
 @router.get("", response_model=list[Post])
 def list_posts(db: db, filters: Annotated[FilterPosts, Query()]):
@@ -30,9 +29,20 @@ def create_post(post: PostCreate, db: db):
 
 
 @router.put("/{post_id}", response_model=Post)
-def update_post(post_id: int, post: PostUpdate, db: db):
+def update_post(post_id: int, post: PostCreate, db: db):
     try:
         post = posts.update_post(db, post_id, post)
+        db.commit()
+        db.refresh(post)
+        return post
+    except DbnotFoundException:
+        raise HTTPException(status_code=404, detail=f"Post {post_id} not found!")
+    
+
+@router.patch("/{post_id}", response_model=Post)
+def patch_post(post_id: int, post: PostUpdate, db: db):
+    try:
+        post = posts.patch_post(db, post_id, post)
         db.commit()
         db.refresh(post)
         return post

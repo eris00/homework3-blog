@@ -23,3 +23,26 @@ def get_or_create_tags(db: Session, tag_names: list[str]) -> list[Tag]:
 
     db.add_all(new_tags)
     return existing_tags + new_tags
+
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from models.tags import Tag, post_tags
+
+
+def list_tags(db: Session):
+    tags_with_counts = (
+        db.query(
+            Tag.id,
+            Tag.name,
+            func.count(post_tags.c.post_id).label("posts_count")
+        )
+        .outerjoin(post_tags, Tag.id == post_tags.c.tag_id)
+        .group_by(Tag.id, Tag.name)
+        .all()
+    )
+
+    # Convert query results into a list of dictionaries
+    return [
+        {"id": tag.id, "name": tag.name, "posts_count": tag.posts_count}
+        for tag in tags_with_counts
+    ]

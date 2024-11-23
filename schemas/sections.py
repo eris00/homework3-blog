@@ -1,8 +1,9 @@
-from pydantic import BaseModel, ConfigDict
+from typing import Annotated
+from pydantic import BaseModel, ConfigDict, Field, constr
 
 
 class SectionBase(BaseModel):
-    name: str  # TODO: min and max length must be defined!!
+    name: Annotated[str, Field(..., max_length=60, min_length=3)]
 
 
 class SectionCreate(SectionBase):

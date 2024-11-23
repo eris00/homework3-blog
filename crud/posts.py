@@ -6,6 +6,7 @@ from crud.tags import get_or_create_tags
 from exceptions import DbnotFoundException
 from models.posts import Post
 from schemas.posts import FilterPosts, PostCreate, PostUpdate
+from schemas.tags import Tag
 
 
 def get_post(db: Session, post_id: int) -> Post:
@@ -22,7 +23,17 @@ def list_posts(db: Session, filters: Optional[FilterPosts] = None) -> list[Post]
         if filters.title:
             query = query.where(Post.title.ilike(f"%{filters.title}%"))
 
-        # Add more filters
+        if filters.section_id:
+            query = query.where(Post.section_id == filters.section_id)
+
+        if filters.tags:
+            query = query.join(Post.tags).where(Tag.name.in_(filters.tags))
+
+        if filters.created_at_gt:
+            query = query.where(Post.created_at >= filters.created_at_gt)
+
+        if filters.created_at_lt:
+            query = query.where(Post.created_at <= filters.created_at_lt)
 
     return db.scalars(query).all()
 
@@ -41,7 +52,7 @@ def create_post(db: Session, post_data: PostCreate) -> Post:
     return new_post
 
 
-def update_post(db: Session, post_id: int, post_data: PostUpdate) -> Post:
+def update_post(db: Session, post_id: int, post_data: PostCreate) -> Post:
     post_being_updated = get_post(db, post_id)
 
     update_data = post_data.model_dump(exclude_unset=True, exclude={"tags"})
@@ -51,6 +62,20 @@ def update_post(db: Session, post_id: int, post_data: PostUpdate) -> Post:
 
     if post_data.tags:
         tags = get_or_create_tags(db, post_data.tags)
+        post_being_updated.tags = tags
+
+    return post_being_updated
+
+
+def patch_post(db: Session, post_id: int, post_data: PostUpdate) -> Post:
+    post_being_updated = get_post(db, post_id)
+
+    update_data = post_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(post_being_updated, key, value)
+
+    if "tags" in update_data:
+        tags = get_or_create_tags(db, update_data["tags"])
         post_being_updated.tags = tags
 
     return post_being_updated

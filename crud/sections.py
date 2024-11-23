@@ -25,11 +25,21 @@ def create_section(db: Session, section_data: SectionCreate) -> Section:
 
 
 def update_section(
-    db: Session, section_id: int, section_data: SectionUpdate
+    db: Session, section_id: int, section_data: SectionCreate
 ) -> Section:
     section_being_updated = get_section(db, section_id)
     update_data = section_data.model_dump(exclude_unset=True)
 
+    for key, value in update_data.items():
+        setattr(section_being_updated, key, value)
+
+    return section_being_updated
+
+
+def patch_section(db: Session, section_id: int, section_data: SectionUpdate) -> Section:
+    section_being_updated = get_section(db, section_id)
+
+    update_data = section_data.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(section_being_updated, key, value)
 

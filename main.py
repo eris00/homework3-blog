@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from database import Base, engine
-from routers import sections, posts
+from routers import sections, posts, tags
 
 
 @asynccontextmanager
@@ -18,3 +18,4 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(sections.router)
 app.include_router(posts.router)
+app.include_router(tags.router)
