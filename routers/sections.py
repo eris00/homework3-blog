@@ -13,7 +13,7 @@ def list_sections(db: db):
 
 
 @router.get("/{section_id}", response_model=Section)
-def get_section(section_id: int, db: db):
+def get_section(section_id: int, db: db) -> str:
     try:
         return sections.get_section(db, section_id)
     except DbnotFoundException:

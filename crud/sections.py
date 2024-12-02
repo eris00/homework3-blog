@@ -16,6 +16,13 @@ def get_section(db: Session, section_id: int) -> Section:
 
 def list_sections(db: Session) -> list[Section]:
     return db.scalars(select(Section)).all()
+    """
+    #or:
+    stmt = select(Section)
+    sections_list = db.execute(stmt).scalars().all()
+    return sections_list
+    """
+
 
 
 def create_section(db: Session, section_data: SectionCreate) -> Section:
@@ -38,8 +45,7 @@ def update_section(
 
 def patch_section(db: Session, section_id: int, section_data: SectionUpdate) -> Section:
     section_being_updated = get_section(db, section_id)
-
-    update_data = section_data.model_dump(exclude_unset=True)
+    update_data = section_data.model_dump()
     for key, value in update_data.items():
         setattr(section_being_updated, key, value)
 

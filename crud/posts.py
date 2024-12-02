@@ -40,7 +40,6 @@ def list_posts(db: Session, filters: Optional[FilterPosts] = None) -> list[Post]
 
 def create_post(db: Session, post_data: PostCreate) -> Post:
     section = get_section(db, post_data.section_id)
-
     new_post = Post(**post_data.model_dump(exclude={"tags"}))
     new_post.section = section
 
@@ -52,14 +51,12 @@ def create_post(db: Session, post_data: PostCreate) -> Post:
     return new_post
 
 
-def update_post(db: Session, post_id: int, post_data: PostCreate) -> Post:
+def put_post(db: Session, post_id: int, post_data: PostCreate) -> Post:
     post_being_updated = get_post(db, post_id)
 
     update_data = post_data.model_dump(exclude_unset=True, exclude={"tags"})
-
     for key, value in update_data.items():
         setattr(post_being_updated, key, value)
-
     if post_data.tags:
         tags = get_or_create_tags(db, post_data.tags)
         post_being_updated.tags = tags

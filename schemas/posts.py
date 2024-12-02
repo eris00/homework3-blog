@@ -30,7 +30,7 @@ class Post(PostBase):
     section: Section
     tags: list[Tag] = []
 
-    model_config = ConfigDict(from_attributes=True)
+    # model_config = ConfigDict(from_attributes=True)
 
 
 class FilterPosts(BaseModel):
@@ -39,4 +39,4 @@ class FilterPosts(BaseModel):
     tags: Optional[List[str]] = None
     created_at_gt: Optional[datetime] = None
     created_at_lt: Optional[datetime] = None
-
+    

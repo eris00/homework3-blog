@@ -29,9 +29,9 @@ def create_post(post: PostCreate, db: db):
 
 
 @router.put("/{post_id}", response_model=Post)
-def update_post(post_id: int, post: PostCreate, db: db):
+def put_post(post_id: int, post: PostCreate, db: db):
     try:
-        post = posts.update_post(db, post_id, post)
+        post = posts.put_post(db, post_id, post)
         db.commit()
         db.refresh(post)
         return post
