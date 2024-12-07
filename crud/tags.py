@@ -1,7 +1,17 @@
 from sqlalchemy import select
 from models.tags import Tag
 from sqlalchemy.orm import Session
+from exceptions import DbnotFoundException
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from models.tags import Tag, post_tags
 
+
+def get_tag(db: Session, tag_id: int):
+    tag = db.get(Tag, tag_id)
+    if not tag:
+        raise DbnotFoundException
+    return tag
 
 def get_or_create_tags(db: Session, tag_names: list[str]) -> list[Tag]:
     unique_tag_names = list(set(tag_names))
@@ -24,10 +34,6 @@ def get_or_create_tags(db: Session, tag_names: list[str]) -> list[Tag]:
     db.add_all(new_tags)
     return existing_tags + new_tags
 
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from models.tags import Tag, post_tags
-
 
 def list_tags(db: Session):
     tags_with_counts = (
@@ -46,3 +52,8 @@ def list_tags(db: Session):
         {"id": tag.id, "name": tag.name, "posts_count": tag.posts_count}
         for tag in tags_with_counts
     ]
+
+
+def delete_tag(db: Session, tag_id: int):
+    tag = get_tag(db, tag_id)
+    db.delete(tag)

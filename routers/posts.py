@@ -1,10 +1,14 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 import crud.posts as posts
 from exceptions import DbnotFoundException
 from schemas.posts import FilterPosts, Post, PostCreate, PostUpdate
+from models.posts import Post as PostModel
+from models.tags import Tag
 from database import get_db
 from sqlalchemy.orm import Session
+
+from services.background_tasks import delete_relatable_tags
 
 router = APIRouter(prefix="/posts", tags=["posts"]) 
 
@@ -52,9 +56,11 @@ def patch_post(post_id: int, post: PostUpdate, db: Annotated[Session, Depends(ge
 
 
 @router.delete("/{post_id}", status_code=204)
-def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
+async def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)],  background_tasks: BackgroundTasks, is_del_tags: bool = Query(...)):
     try:
-        posts.delete_post(db, post_id)
+        post_obj = db.get(PostModel, post_id)
+        posts.delete_post(db, post_id)  
         db.commit()
+        background_tasks.add_task(delete_relatable_tags, db, is_del_tags, post_obj)
     except DbnotFoundException:
         raise HTTPException(status_code=404, detail=f"Post {post_id} not found!")
