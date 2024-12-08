@@ -8,7 +8,7 @@ from models.tags import Tag
 from database import get_db
 from sqlalchemy.orm import Session
 
-from services.background_tasks import delete_relatable_tags
+from utils.background_tasks import delete_relatable_tags
 
 router = APIRouter(prefix="/posts", tags=["posts"]) 
 
