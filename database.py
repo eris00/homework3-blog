@@ -3,9 +3,8 @@ from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-from config import Settings
+from config import settings
 
-settings = Settings()
 engine = create_engine(settings.DATABASE_URL, echo=True)
 # `engine`` manages connections to the db
 # we can specify the pool size, max_overflow, isolation_level, query logging etc

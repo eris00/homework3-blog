@@ -5,8 +5,9 @@ from exceptions import DbnotFoundException, SectionInUseError
 from schemas.sections import Section, SectionCreate, SectionUpdate
 from database import get_db
 from sqlalchemy.orm import Session
+from utils.auth import oauth2_scheme
 
-router = APIRouter(prefix="/sections", tags=["sections"])
+router = APIRouter(prefix="/sections", tags=["sections"], dependencies=[Depends(oauth2_scheme)])
 
 
 @router.get("", response_model=list[Section])

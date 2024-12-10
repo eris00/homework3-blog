@@ -1,10 +1,16 @@
 from datetime import datetime, timedelta
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 
-# Secret key for signing JWTs (Keep it safe and secret in production)
-SECRET_KEY = "your_secret_key_here"
-ALGORITHM = "H256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+from schemas.user import TokenData
+from config import settings
+
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -12,13 +18,13 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     if expires_delta:
         expire = datetime.now() + expires_delta
     else:
-        expire = datetime.now() + timedelta(minutes=15)
+        expire = datetime.now() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str):
+def verify_token(token: str) -> TokenData:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
@@ -27,4 +33,20 @@ def verify_token(token: str):
         return payload
     except JWTError as e:
         raise ValueError(f"Invalid token {str(e)}")
+  
+
+"""
+def get_current_user(token: str = Depends(oauth2_scheme)):
     
+    # Dependency that validates the token and returns the user's information.
+
+    try:
+        payload = verify_token(token)
+        return payload
+    except ValueError:
+        raise HTTPException(
+            status_code= 401,
+            detail="Invalid or expired token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+"""

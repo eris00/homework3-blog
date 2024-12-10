@@ -7,10 +7,10 @@ from models.posts import Post as PostModel
 from models.tags import Tag
 from database import get_db
 from sqlalchemy.orm import Session
-
+from utils.auth import oauth2_scheme
 from utils.background_tasks import delete_relatable_tags
 
-router = APIRouter(prefix="/posts", tags=["posts"]) 
+router = APIRouter(prefix="/posts", tags=["posts"], dependencies=[Depends(oauth2_scheme)]) 
 
 @router.get("", response_model=list[Post])
 def list_posts(filters: Annotated[FilterPosts, Query()], db: Annotated[Session, Depends(get_db)]):
