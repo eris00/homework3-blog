@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from database import Base, engine
 from routers import sections, posts, tags, auth
+
 
 
 @asynccontextmanager
@@ -15,6 +17,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/public", StaticFiles(directory="public"), name="public")
 
 app.include_router(sections.router)
 app.include_router(posts.router)
