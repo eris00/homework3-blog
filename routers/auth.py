@@ -25,7 +25,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db:Session = Depends
     access_token = create_access_token(data={"sub": user.email}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     return {"access_token": access_token, "token_type": "bearer"}
 
-@router.post("/register", response_model=User)
+@router.post("/register", response_model=Token)
 def register(db: Annotated[Session, Depends(get_db)], user_data: UserCreate):
     existing_user = get_user_by_email(db, email=user_data.email)
     if existing_user:
@@ -33,5 +33,7 @@ def register(db: Annotated[Session, Depends(get_db)], user_data: UserCreate):
             status_code=400,
             detail="A user with this email already exists."
         )
-    return create_user(db, user_data)
+    user = create_user(db, user_data)
+    access_token = create_access_token(data={"sub": user.email}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    return {"access_token": access_token, "token_type": "bearer"}
     

@@ -27,6 +27,7 @@ class Post(PostBase):
     id: int
     created_at: datetime
     updated_at: Union[datetime, None] = None
+    image: Optional[str]
     section: Section
     tags: list[Tag] = []
 

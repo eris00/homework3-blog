@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, File, HTTPException, Query, BackgroundTasks, UploadFile
 import crud.posts as posts
 from exceptions import DbnotFoundException
 from schemas.posts import FilterPosts, Post, PostCreate, PostUpdate
@@ -64,3 +64,13 @@ async def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)],  ba
         background_tasks.add_task(delete_relatable_tags, db, is_del_tags, post_obj)
     except DbnotFoundException:
         raise HTTPException(status_code=404, detail=f"Post {post_id} not found!")
+    
+@router.post("/{post_id}/upload_image", response_model=Post)
+def upload_post_image(post_id: int, db: Annotated[Session, Depends(get_db)], image: UploadFile = File(...)):
+    try:
+        post = posts.upload_image(db, post_id, image)
+        db.commit()
+        db.refresh(post)
+        return post
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))

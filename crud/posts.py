@@ -1,4 +1,6 @@
+import os
 from typing import Optional
+from fastapi import UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from crud.sections import get_section
@@ -8,6 +10,7 @@ from models.posts import Post
 from schemas.posts import FilterPosts, PostCreate, PostUpdate
 from schemas.tags import Tag
 
+UPLOAD_DIR = "public/images/posts/"
 
 def get_post(db: Session, post_id: int) -> Post:
     post = db.get(Post, post_id)
@@ -81,3 +84,23 @@ def patch_post(db: Session, post_id: int, post_data: PostUpdate) -> Post:
 def delete_post(db: Session, post_id: int) -> None:
     post = get_post(db, post_id)
     db.delete(post)
+
+def upload_image(db: Session, post_id, image: UploadFile) -> Post:
+    post = get_post(db, post_id)
+    if not post:
+        raise ValueError(f"Post with ID: {post_id} not found!")
+    
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+    # Save the image
+    image_path = os.path.join(UPLOAD_DIR, image.filename)
+    with open(image_path, "wb") as f:
+        f.write(image.file.read())
+
+    # Update the database with the image path
+    post.image = image_path
+    db.add(post)
+    return post
+    
+
+    
