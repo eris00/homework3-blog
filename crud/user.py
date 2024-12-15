@@ -1,3 +1,4 @@
+from fastapi import Depends
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from models.user import User
@@ -19,6 +20,7 @@ def create_user(db:Session, user: UserCreate):
 
 def verify_password(plain_password: str, hash_password: str) -> bool:
     return pwd_context.verify(plain_password, hash_password)
+
 
 
 

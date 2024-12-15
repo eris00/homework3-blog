@@ -2,7 +2,9 @@ from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-
+from sqlalchemy.orm import Session
+from crud.user import get_user_by_email
+from database import get_db
 from schemas.user import TokenData
 from config import settings
 
@@ -33,20 +35,17 @@ def verify_token(token: str) -> TokenData:
         return payload
     except JWTError as e:
         raise ValueError(f"Invalid token {str(e)}")
-  
-
-"""
-def get_current_user(token: str = Depends(oauth2_scheme)):
     
-    # Dependency that validates the token and returns the user's information.
-
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = verify_token(token)
-        return payload
-    except ValueError:
-        raise HTTPException(
-            status_code= 401,
-            detail="Invalid or expired token",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-"""
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        user = get_user_by_email(db, username)
+        if user is None:
+            raise HTTPException(status_code=401, detail="User not found")
+        return user
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication token")
+
